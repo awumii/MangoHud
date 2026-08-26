@@ -71,12 +71,6 @@ GPUS::GPUS(const overlay_params* early_params) {
             }
         }
 
-        // Skip other GPU
-        if (HUDElements.vendorID != 0 && vendor_id != 0 && vendor_id != HUDElements.vendorID) {
-            SPDLOG_INFO("Skipping GPU {:x} (Main GPU is {:x})", vendor_id, HUDElements.vendorID);
-            continue;
-        }
-
         std::shared_ptr<GPU> ptr =
             std::make_shared<GPU>(node_name, vendor_id, device_id, pci_dev, driver);
 
@@ -209,3 +203,21 @@ std::shared_ptr<const overlay_params> GPUS::params() {
 }
 
 std::unique_ptr<GPUS> gpus = nullptr;
+
+gpu_metrics GPU::get_metrics() {
+    if (this->vendor_id == 0x10de && !this->nvidia && HUDElements.vendorID == 0x10de) {
+        SPDLOG_INFO("Lazy init NVML");
+        this->nvidia = std::make_unique<NVIDIA>(this->pci_dev.c_str());
+    }
+
+    if (this->nvidia)
+        this->metrics = this->nvidia->copy_metrics();
+
+    if (this->amdgpu)
+        this->metrics = this->amdgpu->copy_metrics();
+
+    if (this->fdinfo)
+        this->metrics = this->fdinfo->copy_metrics();
+
+    return this->metrics;
+}

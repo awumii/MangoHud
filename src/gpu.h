@@ -36,8 +36,8 @@ class GPU {
         )
             : drm_node(drm_node), pci_dev(pci_dev), vendor_id(vendor_id), device_id(device_id),
             driver(driver) {
-                if (vendor_id == 0x10de)
-                    nvidia = std::make_unique<NVIDIA>(pci_dev);
+                //if (vendor_id == 0x10de)
+                //nvidia = std::make_unique<NVIDIA>(pci_dev);
 
                 if (vendor_id == 0x1002)
                     amdgpu = std::make_unique<AMDGPU>(pci_dev, device_id, vendor_id, drm_node);
@@ -50,18 +50,7 @@ class GPU {
                     fdinfo = std::make_unique<GPU_fdinfo>(driver, pci_dev, drm_node, device_id, vendor_id);
         }
 
-        gpu_metrics get_metrics() {
-            if (nvidia)
-                this->metrics = nvidia->copy_metrics();
-
-            if (amdgpu)
-                this->metrics = amdgpu->copy_metrics();
-
-            if (fdinfo)
-                this->metrics = fdinfo->copy_metrics();
-
-            return metrics;
-        };
+        gpu_metrics get_metrics();
 
         std::vector<int> nvidia_pids() {
 #ifdef HAVE_NVML

@@ -71,6 +71,12 @@ GPUS::GPUS(const overlay_params* early_params) {
             }
         }
 
+        // Skip other GPU
+        if (HUDElements.vendorID != 0 && vendor_id != 0 && vendor_id != HUDElements.vendorID) {
+            SPDLOG_INFO("Skipping GPU {:x} (Main GPU is {:x})", vendor_id, HUDElements.vendorID);
+            continue;
+        }
+
         std::shared_ptr<GPU> ptr =
             std::make_shared<GPU>(node_name, vendor_id, device_id, pci_dev, driver);
 
